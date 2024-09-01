@@ -54,7 +54,11 @@ class Avion {
     this.maxSize = 100; // Tamaño máximo
     this.x = 0;
     this.y = 0;
+<<<<<<< HEAD
     this.targetY = -120; // Establece el targetY a -120 (anteriormente -150)
+=======
+    this.targetY = -150; // Establece el targetY a -150
+>>>>>>> f5732ca7c977ac7adb82292fcb191ef717d70b15
     this.balas = []; // Arreglo para almacenar balas
   }
 
@@ -93,8 +97,13 @@ class Avion {
       this.init();
     }
 
+<<<<<<< HEAD
     // Agrega una nueva bala en la posición 370, 260 respecto al avión cada 20 frames solo si y > 0
     if (frameCount % 20 == 0 && this.y > 0) {
+=======
+    // Agrega una nueva bala en la posición 370, 260 respecto al avión cada 10 frames
+    if (frameCount % 10 == 0) {
+>>>>>>> f5732ca7c977ac7adb82292fcb191ef717d70b15
       this.balas.push(
         new Bala(
           this.x + 370 - this.img.width / 2,
