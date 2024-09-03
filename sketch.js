@@ -2,6 +2,8 @@ let cielo;
 let PlazaMayo;
 let munch;
 let avion;
+let xMunch, yMunch; // Variables para la posición de Munch
+let munchSize; // Variable para el tamaño de Munch
 
 function preload() {
   cielo = loadImage("images/cielo.png");
@@ -13,20 +15,37 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
   avion.init();
+  xMunch = width / 2; // Posición inicial de Munch
+  yMunch = height * 0.6; // Posición vertical inicial de Munch
+  munchSize = munch.width / 3; // Tamaño inicial de Munch
 }
 
 function draw() {
-  background(cielo); // Fondo del cielo
-  image(PlazaMayo, 0, 0, width, height); // Imagen de fondo de Plaza Mayo
-  avion.mostrar(); // Muestra el avión y las balas
-  avion.actualizar(); // Actualiza primero el avión (incluyendo las balas)
+  background(cielo);
+  image(PlazaMayo, 0, 0, width, height);
+  avion.mostrar();
+  avion.actualizar();
   image(
     munch,
-    width / 2 - munch.width / 6,
-    height * 0.6,
-    munch.width / 3,
-    munch.height / 3
-  ); // Munch al frente
+    xMunch - munchSize / 2,
+    yMunch,
+    munchSize,
+    (munch.height / munch.width) * munchSize
+  ); // Ajusta el tamaño proporcionalmente
+}
+
+function keyPressed() {
+  if (keyCode === LEFT_ARROW) {
+    xMunch -= 10;
+  } else if (keyCode === RIGHT_ARROW) {
+    xMunch += 10;
+  } else if (keyCode === UP_ARROW) {
+    yMunch -= 10;
+    munchSize *= 0.95; // Disminuye el tamaño al moverse hacia arriba
+  } else if (keyCode === DOWN_ARROW) {
+    yMunch += 10;
+    munchSize *= 1.05; // Aumenta el tamaño al moverse hacia abajo
+  }
 }
 
 class Bala {
@@ -37,35 +56,30 @@ class Bala {
   }
 
   mostrar() {
-    fill(0); // Color negro
+    fill(0);
     noStroke();
-    circle(this.x, this.y, 6); // Dibuja un círculo de 6px de diámetro para mayor visibilidad
+    circle(this.x, this.y, 6);
   }
 
   actualizar() {
-    this.y += this.speed; // Mueve la bala hacia abajo
+    this.y += this.speed;
   }
 }
 
 class Avion {
   constructor(imgPath) {
     this.img = loadImage(imgPath);
-    this.size = 0; // Tamaño inicial
-    this.maxSize = 100; // Tamaño máximo
+    this.size = 0;
+    this.maxSize = 100;
     this.x = 0;
     this.y = 0;
-<<<<<<< HEAD
-    this.targetY = -120; // Establece el targetY a -120 (anteriormente -150)
-=======
-    this.targetY = -150; // Establece el targetY a -150
->>>>>>> f5732ca7c977ac7adb82292fcb191ef717d70b15
-    this.balas = []; // Arreglo para almacenar balas
+    this.targetY = -120;
+    this.balas = [];
   }
 
   init() {
-    // Establece x y y basado en el tamaño del canvas y de la imagen
     this.x = width / 2;
-    this.y = height * 0.4; // Iniciar en el centro vertical del canvas
+    this.y = height * 0.4;
   }
 
   mostrar() {
@@ -78,32 +92,19 @@ class Avion {
       (this.size / 100) * this.img.width,
       (this.size / 100) * this.img.height
     );
-
-    // Dibuja todas las balas
     for (let bala of this.balas) {
       bala.mostrar();
     }
   }
 
   actualizar() {
-    // Actualiza el tamaño basado en la posición de y
     this.size = map(this.y, height, this.targetY, 0, this.maxSize);
-
-    // Mueve y hacia el targetY si aún no está en esa posición
     if (this.y > this.targetY) {
-      this.y -= 2; // Ajusta este valor para controlar la velocidad del movimiento
+      this.y -= 2;
     } else {
-      // Reinicia el avión si alcanza el targetY
       this.init();
     }
-
-<<<<<<< HEAD
-    // Agrega una nueva bala en la posición 370, 260 respecto al avión cada 20 frames solo si y > 0
     if (frameCount % 20 == 0 && this.y > 0) {
-=======
-    // Agrega una nueva bala en la posición 370, 260 respecto al avión cada 10 frames
-    if (frameCount % 10 == 0) {
->>>>>>> f5732ca7c977ac7adb82292fcb191ef717d70b15
       this.balas.push(
         new Bala(
           this.x + 370 - this.img.width / 2,
@@ -112,8 +113,6 @@ class Avion {
         )
       );
     }
-
-    // Actualiza todas las balas
     for (let bala of this.balas) {
       bala.actualizar();
     }
