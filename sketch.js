@@ -1,6 +1,7 @@
 let cielo;
 let PlazaMayo;
 let munch;
+let indicacion;
 let avion;
 let xMunch, yMunch, munchSize;
 let keyStates = {};
@@ -9,20 +10,22 @@ function preload() {
   cielo = loadImage("images/cielo.png");
   PlazaMayo = loadImage("images/PlazaMayo.png");
   munch = loadImage("images/munch.png");
+  indicacion = loadImage("images/indicacion.png");
   avion = new Avion("images/avion.png");
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   avion.init();
-  xMunch = width / 2; // Posición inicial de Munch, centrada horizontalmente
-  yMunch = height * 0.6; // Posición vertical inicial de Munch
-  munchSize = munch.width / 3; // Tamaño inicial de Munch
+  xMunch = width / 2; // PosiciÃ³n inicial de Munch, centrada horizontalmente
+  yMunch = height * 0.6; // PosiciÃ³n vertical inicial de Munch
+  munchSize = munch.width / 3; // TamaÃ±o inicial de Munch
 }
 
 function draw() {
   background(cielo);
   image(PlazaMayo, 0, 0, width, height);
+  image(indicacion, 0, 0);
   avion.mostrar();
   avion.actualizar();
 
@@ -78,7 +81,7 @@ class Bala {
   mostrar() {
     fill(0); // Color negro
     noStroke();
-    circle(this.x, this.y, 6); // Dibuja un círculo de 6px de diámetro para mayor visibilidad
+    circle(this.x, this.y, 6); // Dibuja un cÃ­rculo de 6px de diÃ¡metro para mayor visibilidad
   }
 
   actualizar() {
@@ -89,8 +92,8 @@ class Bala {
 class Avion {
   constructor(imgPath) {
     this.img = loadImage(imgPath);
-    this.size = 0; // Tamaño inicial
-    this.maxSize = 100; // Tamaño máximo
+    this.size = 0; // TamaÃ±o inicial
+    this.maxSize = 100; // TamaÃ±o mÃ¡ximo
     this.x = 0;
     this.y = 0;
     this.targetY = -120; // Establece el targetY a -120
