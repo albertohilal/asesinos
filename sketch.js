@@ -2,11 +2,8 @@ let cielo;
 let PlazaMayo;
 let munch;
 let avion;
-let xMunch, yMunch, munchSize;
 let canvas;
 let hammer;
-let keyStates = {}; // Object to hold the state of arrow keys
-let minY, maxY; // Global scope for minY and maxY
 
 function preload() {
   cielo = loadImage(
@@ -15,31 +12,15 @@ function preload() {
   PlazaMayo = loadImage(
     windowWidth <= 1000 ? "images/PlazaMayoMovil.webp" : "images/PlazaMayo.webp"
   );
-  munch = loadImage("images/munch.png");
+  munch = new Munch("images/munch.png");
   avion = new Avion("images/avion.png");
 }
 
 function setup() {
   canvas = createCanvas(windowWidth, windowHeight);
   avion.init();
-  xMunch = width / 2; // Centered horizontally
-  yMunch = height * 0.68; // Initial vertical position within allowed range
-  munchSize = munch.width / 3; // Initial size of Munch
-
-  // Define minY and maxY based on the current height
-  minY = height * 0.65;
-  maxY = height * 1.2;
-
-  setupHammer(); // Setup Hammer.js for touch gestures
-
-  // Attach keyboard event listeners
-  window.addEventListener("keydown", (event) => {
-    keyStates[event.key] = true;
-  });
-
-  window.addEventListener("keyup", (event) => {
-    keyStates[event.key] = false;
-  });
+  munch.init(width / 2, height * 0.68); // Set initial position of munch
+  setupHammer(); // Setup touch gestures with Hammer.js
 }
 
 function draw() {
@@ -47,52 +28,89 @@ function draw() {
   image(PlazaMayo, 0, 0, width, height);
   avion.mostrar();
   avion.actualizar();
-
-  // Handle keyboard controls
-  handleMovement();
-
-  // Adjust munchSize based on yMunch position
-  munchSize = map(yMunch, minY, maxY, munch.width * 0.05, munch.width * 4);
-
-  image(
-    munch,
-    xMunch - munchSize / 2,
-    yMunch,
-    munchSize,
-    munchSize * (munch.height / munch.width)
-  );
+  munch.update();
+  munch.display();
 }
 
-function handleMovement() {
-  if (keyStates["ArrowLeft"]) {
-    xMunch -= 5;
-  }
-  if (keyStates["ArrowRight"]) {
-    xMunch += 5;
-  }
-  if (keyStates["ArrowUp"] && yMunch > minY) {
-    yMunch -= 5;
-  }
-  if (keyStates["ArrowDown"] && yMunch < maxY) {
-    yMunch += 5;
-  }
+function keyPressed() {
+  munch.handleKeyboard(keyCode, true); // Handle key press
+}
+
+function keyReleased() {
+  munch.handleKeyboard(keyCode, false); // Handle key release
 }
 
 function setupHammer() {
   hammer = new Hammer(canvas.elt);
   hammer.get("pan").set({ direction: Hammer.DIRECTION_ALL });
+  hammer.on("panleft panright panup pandown", (ev) => munch.handleGestures(ev));
+}
 
-  hammer.on("panleft panright panup pandown", function (ev) {
-    if (ev.type === "panright") {
-      xMunch += 5;
-    } else if (ev.type === "panleft") {
-      xMunch -= 5;
-    } else if (ev.type === "panup" && yMunch > minY) {
-      yMunch -= 5;
-    } else if (ev.type === "pandown" && yMunch < maxY) {
-      yMunch += 5;
+class Munch {
+  constructor(imgPath) {
+    this.img = loadImage(
+      imgPath,
+      () => console.log("Munch image loaded successfully"),
+      console.error
+    );
+    this.x = 0;
+    this.y = 0;
+    this.size = 0;
+    this.minY = 0;
+    this.maxY = 0;
+    this.keyStates = {}; // Object to keep track of key states
+  }
+
+  init(x, y) {
+    this.x = x;
+    this.y = y;
+    this.size = this.img.width / 3;
+    this.minY = height * 0.65;
+    this.maxY = height * 1.2;
+  }
+
+  update() {
+    if (this.keyStates["ArrowLeft"]) this.x -= 5;
+    if (this.keyStates["ArrowRight"]) this.x += 5;
+    if (this.keyStates["ArrowUp"] && this.y > this.minY) this.y -= 5;
+    if (this.keyStates["ArrowDown"] && this.y < this.maxY) this.y += 5;
+
+    this.size = map(
+      this.y,
+      this.minY,
+      this.maxY,
+      this.img.width * 0.05,
+      this.img.width * 4
+    );
+  }
+
+  display() {
+    image(
+      this.img,
+      this.x - this.size / 2,
+      this.y,
+      this.size,
+      this.size * (this.img.height / this.img.width)
+    );
+  }
+
+  handleKeyboard(key, isPressed) {
+    if (
+      key === LEFT_ARROW ||
+      key === RIGHT_ARROW ||
+      key === UP_ARROW ||
+      key === DOWN_ARROW
+    ) {
+      this.keyStates[key] = isPressed;
     }
-  });
+  }
+
+  handleGestures(ev) {
+    if (ev.type === "panright") this.x += 5;
+    else if (ev.type === "panleft") this.x -= 5;
+    else if (ev.type === "panup" && this.y > this.minY) this.y -= 5;
+    else if (ev.type === "pandown" && this.y < this.maxY) this.y += 5;
+  }
 }
 
 class Avion {
