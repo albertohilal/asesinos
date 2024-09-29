@@ -6,13 +6,14 @@ let xMunch, yMunch, munchSize;
 let canvas;
 let hammer;
 let keyStates = {}; // Object to hold the state of arrow keys
+let minY, maxY; // Global scope for minY and maxY
 
 function preload() {
   cielo = loadImage(
     windowWidth <= 1000 ? "images/cieloMovil.webp" : "images/cielo.png"
   );
   PlazaMayo = loadImage(
-    windowWidth <= 1000 ? "images/PlazaMayoMovil.webp" : "images/PlazaMayo.png"
+    windowWidth <= 1000 ? "images/PlazaMayoMovil.webp" : "images/PlazaMayo.webp"
   );
   munch = loadImage("images/munch.png");
   avion = new Avion("images/avion.png");
@@ -22,8 +23,12 @@ function setup() {
   canvas = createCanvas(windowWidth, windowHeight);
   avion.init();
   xMunch = width / 2; // Centered horizontally
-  yMunch = height * 0.6; // Initial vertical position
+  yMunch = height * 0.68; // Initial vertical position within allowed range
   munchSize = munch.width / 3; // Initial size of Munch
+
+  // Define minY and maxY based on the current height
+  minY = height * 0.65;
+  maxY = height * 1.2;
 
   setupHammer(); // Setup Hammer.js for touch gestures
 
@@ -44,18 +49,10 @@ function draw() {
   avion.actualizar();
 
   // Handle keyboard controls
-  if (keyStates["ArrowLeft"]) {
-    xMunch -= 5;
-  }
-  if (keyStates["ArrowRight"]) {
-    xMunch += 5;
-  }
-  if (keyStates["ArrowUp"]) {
-    yMunch -= 5;
-  }
-  if (keyStates["ArrowDown"]) {
-    yMunch += 5;
-  }
+  handleMovement();
+
+  // Adjust munchSize based on yMunch position
+  munchSize = map(yMunch, minY, maxY, munch.width * 0.05, munch.width * 4);
 
   image(
     munch,
@@ -64,6 +61,21 @@ function draw() {
     munchSize,
     munchSize * (munch.height / munch.width)
   );
+}
+
+function handleMovement() {
+  if (keyStates["ArrowLeft"]) {
+    xMunch -= 5;
+  }
+  if (keyStates["ArrowRight"]) {
+    xMunch += 5;
+  }
+  if (keyStates["ArrowUp"] && yMunch > minY) {
+    yMunch -= 5;
+  }
+  if (keyStates["ArrowDown"] && yMunch < maxY) {
+    yMunch += 5;
+  }
 }
 
 function setupHammer() {
@@ -75,9 +87,9 @@ function setupHammer() {
       xMunch += 5;
     } else if (ev.type === "panleft") {
       xMunch -= 5;
-    } else if (ev.type === "panup") {
+    } else if (ev.type === "panup" && yMunch > minY) {
       yMunch -= 5;
-    } else if (ev.type === "pandown") {
+    } else if (ev.type === "pandown" && yMunch < maxY) {
       yMunch += 5;
     }
   });
