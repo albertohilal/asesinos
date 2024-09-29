@@ -1,108 +1,102 @@
 let cielo;
 let PlazaMayo;
 let munch;
-let indicacion;
 let avion;
 let xMunch, yMunch, munchSize;
-let keyStates = {};
+let canvas;
+let hammer;
+let keyStates = {}; // Object to hold the state of arrow keys
 
 function preload() {
-  cielo = loadImage("images/cielo.png");
-  PlazaMayo = loadImage("images/PlazaMayo.png");
+  cielo = loadImage(
+    windowWidth <= 1000 ? "images/cieloMovil.webp" : "images/cielo.png"
+  );
+  PlazaMayo = loadImage(
+    windowWidth <= 1000 ? "images/PlazaMayoMovil.webp" : "images/PlazaMayo.png"
+  );
   munch = loadImage("images/munch.png");
-  indicacion = loadImage("images/indicacion.png");
   avion = new Avion("images/avion.png");
 }
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  canvas = createCanvas(windowWidth, windowHeight);
   avion.init();
-  xMunch = width / 2; // PosiciÃ³n inicial de Munch, centrada horizontalmente
-  yMunch = height * 0.6; // PosiciÃ³n vertical inicial de Munch
-  munchSize = munch.width / 3; // TamaÃ±o inicial de Munch
+  xMunch = width / 2; // Centered horizontally
+  yMunch = height * 0.6; // Initial vertical position
+  munchSize = munch.width / 3; // Initial size of Munch
+
+  setupHammer(); // Setup Hammer.js for touch gestures
+
+  // Attach keyboard event listeners
+  window.addEventListener("keydown", (event) => {
+    keyStates[event.key] = true;
+  });
+
+  window.addEventListener("keyup", (event) => {
+    keyStates[event.key] = false;
+  });
 }
 
 function draw() {
   background(cielo);
   image(PlazaMayo, 0, 0, width, height);
-  image(indicacion, 0, 0);
   avion.mostrar();
   avion.actualizar();
 
-  if (keyStates[LEFT_ARROW]) {
+  // Handle keyboard controls
+  if (keyStates["ArrowLeft"]) {
     xMunch -= 5;
   }
-  if (keyStates[RIGHT_ARROW]) {
+  if (keyStates["ArrowRight"]) {
     xMunch += 5;
   }
+  if (keyStates["ArrowUp"]) {
+    yMunch -= 5;
+  }
+  if (keyStates["ArrowDown"]) {
+    yMunch += 5;
+  }
 
-  if (keyStates[UP_ARROW]) {
-    let proposedY = yMunch - 5;
-    let proposedSize = munchSize * 0.95;
-    if (
-      proposedY + (munch.height / munch.width) * proposedSize >=
-      height * 0.68
-    ) {
-      yMunch = proposedY;
-      munchSize = proposedSize;
+  image(
+    munch,
+    xMunch - munchSize / 2,
+    yMunch,
+    munchSize,
+    munchSize * (munch.height / munch.width)
+  );
+}
+
+function setupHammer() {
+  hammer = new Hammer(canvas.elt);
+  hammer.get("pan").set({ direction: Hammer.DIRECTION_ALL });
+
+  hammer.on("panleft panright panup pandown", function (ev) {
+    if (ev.type === "panright") {
+      xMunch += 5;
+    } else if (ev.type === "panleft") {
+      xMunch -= 5;
+    } else if (ev.type === "panup") {
+      yMunch -= 5;
+    } else if (ev.type === "pandown") {
+      yMunch += 5;
     }
-  }
-  if (keyStates[DOWN_ARROW]) {
-    let proposedY = yMunch + 5;
-    let proposedSize = munchSize * 1.05;
-    if (
-      proposedY + (munch.height / munch.width) * proposedSize <=
-      height * 2.2
-    ) {
-      yMunch = proposedY;
-      munchSize = proposedSize;
-    }
-  }
-
-  let munchHeight = (munch.height / munch.width) * munchSize;
-  image(munch, xMunch - munchSize / 2, yMunch, munchSize, munchHeight);
-}
-
-function keyPressed() {
-  keyStates[keyCode] = true;
-}
-
-function keyReleased() {
-  keyStates[keyCode] = false;
-}
-
-class Bala {
-  constructor(x, y, speed) {
-    this.x = x;
-    this.y = y;
-    this.speed = speed;
-  }
-
-  mostrar() {
-    fill(0); // Color negro
-    noStroke();
-    circle(this.x, this.y, 6); // Dibuja un cÃ­rculo de 6px de diÃ¡metro para mayor visibilidad
-  }
-
-  actualizar() {
-    this.y += this.speed; // Mueve la bala hacia abajo
-  }
+  });
 }
 
 class Avion {
   constructor(imgPath) {
     this.img = loadImage(imgPath);
-    this.size = 0; // TamaÃ±o inicial
-    this.maxSize = 100; // TamaÃ±o mÃ¡ximo
+    this.size = 0;
+    this.maxSize = 100;
     this.x = 0;
     this.y = 0;
-    this.targetY = -120; // Establece el targetY a -120
-    this.balas = []; // Arreglo para almacenar balas
+    this.targetY = -120;
+    this.balas = [];
   }
 
   init() {
     this.x = width / 2;
-    this.y = height * 0.4; // Iniciar en el centro vertical del canvas
+    this.y = height * 0.4;
   }
 
   mostrar() {
@@ -127,7 +121,7 @@ class Avion {
     } else {
       this.init();
     }
-    if (frameCount % 20 == 0 && this.y > 0) {
+    if (frameCount % 20 === 0 && this.y > 0) {
       this.balas.push(
         new Bala(
           this.x + 370 - this.img.width / 2,
@@ -139,5 +133,23 @@ class Avion {
     for (let bala of this.balas) {
       bala.actualizar();
     }
+  }
+}
+
+class Bala {
+  constructor(x, y, speed) {
+    this.x = x;
+    this.y = y;
+    this.speed = speed;
+  }
+
+  mostrar() {
+    fill(0);
+    noStroke();
+    circle(this.x, this.y, 6);
+  }
+
+  actualizar() {
+    this.y += this.speed;
   }
 }
