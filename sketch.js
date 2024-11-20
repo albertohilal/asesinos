@@ -8,7 +8,7 @@ function preload() {
   PlazaMayo = loadImage(
     windowWidth <= 1000 ? "images/PlazaMayoMovil.webp" : "images/PlazaMayo.webp"
   );
-  munch = new Munch("images/ninioPeronista.webp");
+  munch = new Munch("images/juanito.webp");
   avion = new Avion("images/avion.png");
 }
 
